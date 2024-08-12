@@ -1,6 +1,14 @@
 # CI to test Robyn on major Linux, MacOS and Windows
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - 'docs_src/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'docs_src/**'
 
 name: Python Continuous integration
 

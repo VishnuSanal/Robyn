@@ -7,9 +7,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'docs/**'
+      - 'docs_src/**'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - 'docs/**'
+      - 'docs_src/**'
 
 jobs:
   macos:
