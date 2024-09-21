@@ -6,6 +6,7 @@ from typing import Callable, Dict, List, Optional, TypedDict, Any
 
 from robyn import Response
 from robyn.responses import FileResponse, html
+from robyn.types import RequestBody, QueryParam
 
 
 @dataclass
@@ -173,7 +174,15 @@ class OpenAPI:
                 query_params = signature.parameters["query_params"].default
 
             if "body" in signature.parameters:
-                request_body = signature.parameters["body"].default
+                request_body = signature.parameters["body"].annotation
+
+            # priority to typing
+            for parameter in signature.parameters:
+                param_annotation = signature.parameters[parameter].annotation
+                if issubclass(param_annotation, RequestBody):
+                    request_body = param_annotation
+                elif issubclass(param_annotation, QueryParam):
+                    query_params = param_annotation
 
             if signature.return_annotation is not Signature.empty:
                 return_annotation = signature.return_annotation

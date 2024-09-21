@@ -1,28 +1,21 @@
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from asyncio import iscoroutinefunction
 from functools import wraps
 from inspect import signature
 from types import CoroutineType
-from typing import Callable, Dict, List, NamedTuple, Union, Optional
+from typing import Callable, Dict, List, NamedTuple, Optional, Union
+
+from robyn.robyn import FunctionInfo, Headers, HttpMethod, MiddlewareType, QueryParams, Request, Response
+
+from robyn import status_codes
 from robyn.authentication import AuthenticationHandler, AuthenticationNotConfiguredError
 from robyn.dependency_injection import DependencyMap
-from robyn.responses import FileResponse
-
-from robyn.robyn import (
-    FunctionInfo,
-    Headers,
-    HttpMethod,
-    MiddlewareType,
-    Request,
-    Response,
-)
-from robyn import status_codes
 from robyn.jsonify import jsonify
-
+from robyn.responses import FileResponse
+from robyn.types import FormData, PathParams, RequestBody, RequestFiles, RequestIdentity, RequestIP, RequestMethod, RequestURL, QueryParam
 from robyn.ws import WebSocket
-
-import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -124,11 +117,78 @@ class Router(BaseRouter):
         exception_handler: Optional[Callable],
         injected_dependencies: dict,
     ) -> Union[Callable, CoroutineType]:
+        def wrapped_handler(*args, **kwargs):
+            # In the execute functions the request is passed into *args
+            request = next(filter(lambda it: isinstance(it, Request), args), None)
+
+            handler_params = signature(handler).parameters
+
+            if not request or (len(handler_params) == 1 and next(iter(handler_params)) is Request):
+                return handler(*args, **kwargs)
+
+            type_mapping = {
+                "request": Request,
+                "query_params": QueryParams,
+                "headers": Headers,
+                "path_params": PathParams,
+                "body": RequestBody,
+                "method": RequestMethod,
+                "url": RequestURL,
+                "form_data": FormData,
+                "files": RequestFiles,
+                "ip_addr": RequestIP,
+                "identity": RequestIdentity,
+            }
+
+            type_filtered_params = {}
+
+            for handler_param in iter(handler_params):
+                for type_name in type_mapping:
+                    handler_param_type = handler_params[handler_param].annotation
+                    handler_param_name = handler_params[handler_param].name
+                    if handler_param_type is Request:
+                        type_filtered_params[handler_param_name] = request
+                    elif handler_param_type is type_mapping[type_name]:
+                        type_filtered_params[handler_param_name] = getattr(request, type_name)
+                    elif issubclass(handler_param_type, RequestBody):
+                        type_filtered_params[handler_param_name] = getattr(request, "body")
+                    elif issubclass(handler_param_type, QueryParam):
+                        type_filtered_params[handler_param_name] = getattr(request, "query_params")
+
+            request_components = {
+                "r": request,
+                "req": request,
+                "request": request,
+                "query_params": request.query_params,
+                "headers": request.headers,
+                "path_params": request.path_params,
+                "body": request.body,
+                "method": request.method,
+                "url": request.url,
+                "ip_addr": request.ip_addr,
+                "identity": request.identity,
+                "form_data": request.form_data,
+                "files": request.files,
+                "router_dependencies": injected_dependencies["router_dependencies"],
+                "global_dependencies": injected_dependencies["global_dependencies"],
+                **kwargs,
+            }
+
+            name_filtered_params = {k: v for k, v in request_components.items() if k in handler_params and k not in type_filtered_params}
+
+            filtered_params = dict(**type_filtered_params, **name_filtered_params)
+
+            if len(filtered_params) != len(handler_params):
+                invalid_args = set(handler_params) - set(filtered_params)
+                raise SyntaxError(f"Unexpected request params found: {invalid_args}")
+
+            return handler(**filtered_params)
+
         @wraps(handler)
         async def async_inner_handler(*args, **kwargs):
             try:
                 response = self._format_response(
-                    await handler(*args, **kwargs),
+                    await wrapped_handler(*args, **kwargs),
                 )
             except Exception as err:
                 if exception_handler is None:
@@ -142,7 +202,7 @@ class Router(BaseRouter):
         def inner_handler(*args, **kwargs):
             try:
                 response = self._format_response(
-                    handler(*args, **kwargs),
+                    wrapped_handler(*args, **kwargs),
                 )
             except Exception as err:
                 if exception_handler is None:
