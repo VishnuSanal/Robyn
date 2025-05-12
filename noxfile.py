@@ -27,7 +27,7 @@ def tests(session):
         "build",
         "-i",
         "python",
-        "--universal2",
+        # "--universal2",
         "--out",
         "dist",
     )
