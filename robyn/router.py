@@ -348,15 +348,9 @@ class MiddlewareRouter(BaseRouter):
 
             if endpoint is not None:
                 if iscoroutinefunction(handler):
-                    self.add_route(
-                        middleware_type,
-                        endpoint,
-                        async_inner_handler,
-                        injected_dependencies,
-                        HttpMethod.GET,
-                    )
+                    self.add_route(middleware_type, endpoint, async_inner_handler, injected_dependencies)
                 else:
-                    self.add_route(middleware_type, endpoint, inner_handler, injected_dependencies, HttpMethod.GET)
+                    self.add_route(middleware_type, endpoint, inner_handler, injected_dependencies)
             else:
                 params = dict(inspect.signature(handler).parameters)
 

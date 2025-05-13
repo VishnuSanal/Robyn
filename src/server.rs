@@ -379,9 +379,13 @@ impl Server {
         middleware_type: &MiddlewareType,
         route: &str,
         function: FunctionInfo,
-        http_method: HttpMethod,
+        http_method: Option<HttpMethod>,
     ) {
-        let mut endpoint_prefixed_with_method = http_method.to_string();
+        
+        let mut endpoint_prefixed_with_method = match http_method {
+            Some(x) => x.to_string(),
+            None => (&middleware_type).to_string(),
+        };
 
         if !route.starts_with('/') {
             endpoint_prefixed_with_method.push('/');

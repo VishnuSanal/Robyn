@@ -24,6 +24,13 @@ impl MiddlewareType {
     }
 }
 
+// for: https://stackoverflow.com/a/32712140/9652621
+impl std::fmt::Display for MiddlewareType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[pyclass]
 #[derive(Debug, Clone)]
 pub struct FunctionInfo {
