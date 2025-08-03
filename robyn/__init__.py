@@ -520,6 +520,29 @@ class BaseRobyn(ABC):
 
         return inner
 
+    def extra(
+        self,
+        endpoint: str,
+        method: str,
+        auth_required: bool = False,
+        openapi_name: str = "",
+        openapi_tags: List[str] = ["extra"],
+    ):
+        """
+        The @app.extra decorator to add a route with other HTTP methods
+
+        :param endpoint str: endpoint for the route added
+        :param auth_required bool: represents if the route needs authentication or not
+        :param openapi_name: str -- the name of the endpoint in the openapi spec
+        :param openapi_tags: List[str] -- for grouping of endpoints in the openapi spec
+        """
+
+        def inner(handler):
+            # todo: handle the extra methods as a param then pass it downstream
+            return self.add_route(HttpMethod.EXTRA, endpoint, handler, auth_required=auth_required, openapi_name=openapi_name, openapi_tags=openapi_tags)
+
+        return inner
+
     def include_router(self, router):
         """
         The method to include the routes from another router

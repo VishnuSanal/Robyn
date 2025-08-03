@@ -31,6 +31,7 @@ pub enum HttpMethod {
     OPTIONS,
     CONNECT,
     TRACE,
+    EXTRA,
 }
 
 impl HttpMethod {
@@ -45,7 +46,7 @@ impl HttpMethod {
             actix_web::http::Method::OPTIONS => Self::OPTIONS,
             actix_web::http::Method::CONNECT => Self::CONNECT,
             actix_web::http::Method::TRACE => Self::TRACE,
-            _ => panic!("Unsupported HTTP method"),
+            _ => Self::EXTRA,
         }
     }
 }
@@ -63,6 +64,7 @@ impl std::fmt::Display for HttpMethod {
             HttpMethod::OPTIONS => write!(f, "OPTIONS"),
             HttpMethod::CONNECT => write!(f, "CONNECT"),
             HttpMethod::TRACE => write!(f, "TRACE"),
+            Self::EXTRA => write!(f, "{:?}", self),
         }
     }
 }
