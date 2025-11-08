@@ -17,7 +17,7 @@ dist/
 .idea
 
 # python venv
-.venv
+.venv*
 venv
 robyn.code-workspace
 hello_robyn.py
@@ -60,6 +60,11 @@ docs_src/.vercel
 
 # generated files
 docs_src/public/rss/
+
+requirements.txt
+
+#https://github.com/PyO3/maturin/issues/2141
+*.pyd
 
 #https://github.com/PyO3/maturin/issues/2141
 *.pyd

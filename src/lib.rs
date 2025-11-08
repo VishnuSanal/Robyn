@@ -5,6 +5,7 @@ mod server;
 mod shared_socket;
 mod types;
 mod websockets;
+mod async_runtime;
 
 use server::Server;
 use shared_socket::SocketHeld;

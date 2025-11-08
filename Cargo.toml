@@ -2,7 +2,7 @@
 name = "robyn"
 version = "0.72.2"
 authors = ["Sanskar Jethi <sansyrox@gmail.com>"]
-edition = "2021"
+edition = "2024"
 description = "Robyn is a Super Fast Async Python Web Framework with a Rust runtime."
 license = "BSD License (BSD)"
 homepage = "https://github.com/sparckles/robyn"
@@ -15,8 +15,16 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 pyo3 = { version = "0.24.2", features = ["extension-module", "py-clone"]}
-pyo3-async-runtimes = { version = "0.24", features = ["tokio-runtime"] }
-pyo3-async-runtimes-macros = { version = "0.24" }
+# pyo3-async-runtimes = { version = "0.24", features = ["tokio-runtime"] }
+# pyo3-async-runtimes-macros = { version = "0.24" }
+crossbeam-channel = "0.5"
+hyper = { version = "=1.6", features = ["http1", "http2", "server"] }
+hyper-util = { version = "=0.1", features = ["server-auto", "tokio"] }
+tokio-tungstenite = "=0.26"
+rustls-pemfile = "2.2"
+tls-listener = { version = "=0.11", features = ["rustls-ring"] }
+pem = "=3.0"
+pkcs8 = { version = "=0.10", features = ["encryption", "pkcs5"] }
 pyo3-log = "0.12.3"
 tokio = { version = "1.40", features = ["full"] }
 dashmap = "5.4.3"
